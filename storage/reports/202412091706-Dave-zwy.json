@@ -1,0 +1,12 @@
+{
+  "user": "zwy",
+  "doctor": "Dave",
+  "submitTime": "2024-12-09",
+  "current_status": 1,
+  "images": [
+    "b2bfbe36-847c-47a4-bcb2-6cfe2302e63e",
+    "9ffc3587-767b-4db9-a35b-37818a064098"
+  ],
+  "diagnose": "12345",
+  "id": "202412091706-Dave-zwy"
+}
