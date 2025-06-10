@@ -1,0 +1,15 @@
+{
+  "user": "zwy",
+  "doctor": "Tom",
+  "submitTime": "2024-12-11",
+  "current_status": 0,
+  "images": [
+    "6f13d05e-1141-47eb-86ed-6bfa7f18f293",
+    "6fdd0c49-18bc-444c-8d08-fb1e9cbffc20"
+  ],
+  "diagnose": null,
+  "dia": null,
+  "dia_time": null,
+  "dia_result": null,
+  "id": "202412112315-Tom-zwy"
+}

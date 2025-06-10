@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from fastapi.requests import Request
+<<<<<<< HEAD
 from sqlalchemy.orm import sessionmaker
 from starlette.responses import StreamingResponse
 
@@ -12,6 +13,19 @@ from dense_platform_backend_main.utils import resolveAccountJwt
 from dense_platform_backend_main.database.storage import load_image,load_result_image,load_avatars_image
 router = APIRouter()
 
+=======
+from starlette.responses import StreamingResponse
+
+from database.api import uploadImage
+from utils.request import TokenRequest
+from utils.response import Response
+from utils import resolveAccountJwt
+from database.storage import load_image
+
+router = APIRouter()
+
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 class ImageResponse(Response):
     image: str
 
@@ -37,6 +51,7 @@ async def getImage(request: GetImageRequest):
     username = resolveAccountJwt(request.token)["account"]
     image_data = load_image(request.id)
     if not image_data:
+<<<<<<< HEAD
         image_data = load_result_image(request.id)
         if not image_data:
             image_data = load_avatars_image(request.id)
@@ -78,3 +93,7 @@ async def getImage(request: GetImageRequest):
             return StreamingResponse(open("default.png", "rb"))
     return StreamingResponse([detail.data])
 """
+=======
+        return StreamingResponse(open("default.png", "rb"))
+    return StreamingResponse([image_data])
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a

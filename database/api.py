@@ -1,20 +1,34 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 from datetime import datetime
 from typing import List, Optional
 
 import json
 from .storage import (
     load_accounts, save_accounts, load_user_detail, save_user_detail,
+<<<<<<< HEAD
     save_image, load_image, save_report, load_report, get_user_reports,save_user_avatar
 )
 from .table import UserType, UserDetail, DenseReport, ReportStatus
 
 
+=======
+    save_image, load_image, save_report, load_report, get_user_reports,
+    save_user_avatar
+)
+from .table import UserType, UserDetail, DenseReport, ReportStatus
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 def isDoctor(user: str) -> bool:
     accounts = load_accounts()
     return accounts.get(user, {}).get('type') == UserType.Doctor
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 def addReport(user: str, doctor: str) -> dict:
     report = {
         'user': user,
@@ -27,6 +41,7 @@ def addReport(user: str, doctor: str) -> dict:
     report['id'] = report_id
     return report
 
+<<<<<<< HEAD
 
 def get_reports(id: str) -> List[dict]:
     return get_user_reports(id)
@@ -36,18 +51,34 @@ def queryInfo(username: str) -> Optional[dict]:
     return load_user_detail(username)
 
 
+=======
+def get_reports(id: str) -> List[dict]:
+    return get_user_reports(id)
+
+def queryInfo(username: str) -> Optional[dict]:
+    return load_user_detail(username)
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 def deleteInfo(username: str):
     detail_file = f"storage/users/details/{username}.json"
     try:
         os.remove(detail_file)
     except FileNotFoundError:
         pass
+<<<<<<< HEAD
 
 
+=======
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 def uploadImage(file_name: str, data: bytes) -> str:
     format = file_name.split(".")[-1]
     return save_image(data, format)
 
+<<<<<<< HEAD
+=======
+#新增上传头像
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 def uploadavatar(user_name: str, file_name: str, data: bytes) -> str:
     format = file_name.split(".")[-1]
     return save_user_avatar(user_name,format,data )
@@ -60,7 +91,10 @@ def addInfo(userinfo: dict) -> bool:
         print(f"Error saving user info: {e}")
         return False
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 def queryAccount(account: str, password: str) -> Optional[dict]:
     accounts = load_accounts()
     user_data = accounts.get(account)
@@ -68,12 +102,19 @@ def queryAccount(account: str, password: str) -> Optional[dict]:
         return user_data
     return None
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 def addUserAccount(account: str, password: str, _type: UserType) -> bool:
     accounts = load_accounts()
     if account in accounts:
         return False
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     accounts[account] = {
         'id': account,
         'password': password,
@@ -81,6 +122,7 @@ def addUserAccount(account: str, password: str, _type: UserType) -> bool:
     }
     save_accounts(accounts)
     return True
+<<<<<<< HEAD
 
 def teechLevel(data_t)-> str:
     label_counts = {
@@ -218,3 +260,5 @@ def teechLevel2(data_t)-> str:
 # if __name__ == '__main__':
 #     Session = sessionmaker(bind=engine)
 #     session = Session()
+=======
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a

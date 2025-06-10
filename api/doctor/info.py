@@ -1,4 +1,5 @@
 import typing
+<<<<<<< HEAD
 from sqlalchemy.orm import sessionmaker
 import typing
 from fastapi import APIRouter
@@ -18,6 +19,22 @@ from pydantic import BaseModel, ConfigDict
 router = APIRouter()
 
 
+=======
+from fastapi import APIRouter
+from pydantic import BaseModel, ConfigDict
+
+from database.storage import (
+    load_accounts, load_user_detail, save_user_detail,
+    save_doctor_info, load_doctor_info
+)
+from database.table import UserType, UserSex
+from utils.response import Response
+from utils import resolveAccountJwt
+from utils.request import TokenRequest
+
+router = APIRouter()
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 class Doctor(BaseModel):
     id: str
     name: str
@@ -25,32 +42,54 @@ class Doctor(BaseModel):
     position: str = ""
     workplace: str = ""
 
+<<<<<<< HEAD
 
 class DoctorResponse(Response):
     doctors: typing.List[Doctor]
 
 
+=======
+class DoctorResponse(Response):
+    doctors: typing.List[Doctor]
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 @router.post("/api/doctors")
 async def doctors(request: TokenRequest):
     username = resolveAccountJwt(request.token)["account"]
     _doctors = []
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     # 从账号文件中获取所有医生
     accounts = load_accounts()
     for user_id, account in accounts.items():
         if account.get('type') != UserType.Doctor:
             continue
+<<<<<<< HEAD
 
         # 获取医生的基本信息
         user_detail = load_user_detail(user_id)
         doctor_info = load_doctor_info(user_id)
 
+=======
+            
+        # 获取医生的基本信息
+        user_detail = load_user_detail(user_id)
+        doctor_info = load_doctor_info(user_id)
+        
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
         # 设置默认值
         name = user_detail.get('name', user_id) if user_detail else user_id
         sex = user_detail.get('sex', UserSex.Male) if user_detail else UserSex.Male
         position = doctor_info.get('position', '') if doctor_info else ''
         workplace = doctor_info.get('workplace', '') if doctor_info else ''
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
         _doctors.append(Doctor(
             id=user_id,
             name=name,
@@ -58,15 +97,22 @@ async def doctors(request: TokenRequest):
             position=position,
             workplace=workplace
         ))
+<<<<<<< HEAD
 
     return DoctorResponse(doctors=_doctors)
 
 
+=======
+    
+    return DoctorResponse(doctors=_doctors)
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 class DoctorInfo(BaseModel):
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
     position: str
     workplace: str
 
+<<<<<<< HEAD
 
 class DoctorInfoResponse(Response):
     form: DoctorInfo
@@ -80,6 +126,18 @@ class SetDoctorInfoRequest(TokenRequest):
 async def setDoctorInfo(request: SetDoctorInfoRequest):
     username = resolveAccountJwt(request.token)["account"]
 
+=======
+class DoctorInfoResponse(Response):
+    form: DoctorInfo
+
+class SetDoctorInfoRequest(TokenRequest):
+    form: DoctorInfo
+
+@router.post("/api/doctor/info/set")
+async def setDoctorInfo(request: SetDoctorInfoRequest):
+    username = resolveAccountJwt(request.token)["account"]
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     # 保存医生特定信息
     doctor_info = {
         'id': username,
@@ -87,6 +145,7 @@ async def setDoctorInfo(request: SetDoctorInfoRequest):
         'workplace': request.form.workplace
     }
     save_doctor_info(username, doctor_info)
+<<<<<<< HEAD
 
     return DoctorInfoResponse(form=DoctorInfo(**doctor_info))
 
@@ -95,6 +154,15 @@ async def setDoctorInfo(request: SetDoctorInfoRequest):
 async def doctorInfo(request: TokenRequest):
     username = resolveAccountJwt(request.token)["account"]
 
+=======
+    
+    return DoctorInfoResponse(form=DoctorInfo(**doctor_info))
+
+@router.post("/api/doctor/info")
+async def doctorInfo(request: TokenRequest):
+    username = resolveAccountJwt(request.token)["account"]
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     # 获取医生信息，如果不存在则创建默认值
     doctor_info = load_doctor_info(username)
     if doctor_info is None:
@@ -104,6 +172,7 @@ async def doctorInfo(request: TokenRequest):
             'workplace': ''
         }
         save_doctor_info(username, doctor_info)
+<<<<<<< HEAD
 
     return DoctorInfoResponse(form=DoctorInfo(**doctor_info))
 
@@ -175,3 +244,7 @@ async def doctorInfo(request: TokenRequest):
 #             session.add(info)
 #         session.commit()
 #         return DoctorInfoResponse(form=DoctorInfo.model_validate(info))
+=======
+    
+    return DoctorInfoResponse(form=DoctorInfo(**doctor_info))
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a

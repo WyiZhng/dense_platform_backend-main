@@ -1,5 +1,6 @@
 from datetime import date
 import typing
+<<<<<<< HEAD
 from typing import Optional
 
 from fastapi import APIRouter, File, UploadFile,HTTPException
@@ -18,6 +19,21 @@ from dense_platform_backend_main.utils.request import TokenRequest
 from dense_platform_backend_main.utils.response import Response
 from dense_platform_backend_main.utils import (resolveAccountJwt)
 from pydantic import ConfigDict
+=======
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, ConfigDict
+
+from database.table import ImageType, ReportStatus
+from database.storage import (
+    save_report, load_report, get_user_reports,
+    save_comment, get_report_comments,
+    save_report_image, get_report_images,
+    delete_report,load_accounts 
+)
+from utils.request import TokenRequest
+from utils.response import Response
+from utils import resolveAccountJwt
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 
 router = APIRouter()
 
@@ -32,21 +48,65 @@ class ReportRequest(BaseModel):
     images: typing.List[str]
 
 
+<<<<<<< HEAD
 # @router.post("/api/submitReport")
 # async def submitReport(request: ReportRequest):
 #     username = resolveAccountJwt(request.token)["account"]
 #
+=======
+@router.post("/api/submitReport")
+async def submitReport(request: ReportRequest):
+    username = resolveAccountJwt(request.token)["account"]
+    # 创建一个字典来统计各个标签的数量
+    
+    report_data = {
+        "user": username,
+        "doctor": request.doctor,
+        "submitTime": str(date.today()),
+        "current_status": ReportStatus.Checking,
+        "images": request.images,
+        "diagnose": None,
+        "dia": None,
+        "dia_time": None,
+        "dia_result": None
+    }
+    
+    save_report(report_data)
+    return Response()
+#  img_path = f"storage/images/{request.images[0]}.jpg"  # 假设图片存储路径
+
+#     # 读取图片并转换为字节流
+#     with open(img_path, 'rb') as img_file:
+#         contents = img_file.read()
+#     image_np = np.asarray(bytearray(contents), dtype=np.uint8)
+
+#     img = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
+#     try:
+#         data_json,image_id = predict(img)  # 预测过程，将所需数据保存并返回（这里可以保存到数据库）
+#     except Exception as e:
+#         print(e)
+#     diag = teechLevel(str(data_json))
+#     username = resolveAccountJwt(request.token)["account"]
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 #     report_data = {
 #         "user": username,
 #         "doctor": request.doctor,
 #         "submitTime": str(date.today()),
 #         "current_status": ReportStatus.Checking,
 #         "images": request.images,
+<<<<<<< HEAD
 #         "diagnose": None
 #     }
 #
 #     save_report(report_data)
 #     return Response()
+=======
+#         "diagnose": diag,
+#         "Result_img":image_id
+#     }
+#     save_report(report_data)
+#     return str(data_json),image_id
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 
 
 class GetReportRequest(BaseModel):
@@ -63,9 +123,15 @@ class Report(BaseModel):
 
 
 class ReportResponse(Response):
+<<<<<<< HEAD
     reports: List[Report]
 
 
+=======
+    reports: list[Report]
+
+#12.9修改了这个接口和其中get_user_reports的参数这样子方便区分用户和医师
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 @router.post("/api/getReports")
 async def getReports(request: GetReportRequest):
     username = resolveAccountJwt(request.token)["account"]
@@ -81,22 +147,34 @@ async def getReports(request: GetReportRequest):
         except Exception as e:
             print(f"Error processing report: {e}")
             continue
+<<<<<<< HEAD
 
     return ReportResponse(reports=reports)
 
+=======
+                
+    return ReportResponse(reports=reports)
+
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 class ReportImageRequest(TokenRequest):
     id: str
     type: ImageType
 
 
 class ReportImageResponse(Response):
+<<<<<<< HEAD
     images: List[str]
+=======
+    images: list[str]
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 
 
 @router.post("/api/report/images")
 def reportImages(request: ReportImageRequest):
     username = resolveAccountJwt(request.token)["account"]
     report = load_report(request.id)
+<<<<<<< HEAD
     if request.type == ImageType.source:
         if not report:
             return ReportImageResponse(images=[])
@@ -104,6 +182,11 @@ def reportImages(request: ReportImageRequest):
     else :
         return ReportImageResponse(images=report.get("Result_img", []))
 
+=======
+    if not report:
+        return ReportImageResponse(images=[])
+    return ReportImageResponse(images=report.get("images", []))
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 
 
 class DeleteReportRequest(TokenRequest):
@@ -114,16 +197,27 @@ class DeleteReportRequest(TokenRequest):
 def deleteReport(request: DeleteReportRequest):
     username = resolveAccountJwt(request.token)["account"]
     report = load_report(request.id)
+<<<<<<< HEAD
 
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
 
+=======
+    
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     if report["user"] == username or report["doctor"] == username:
         if delete_report(request.id):
             return Response()
         else:
             raise HTTPException(status_code=500, detail="Failed to delete report")
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     raise HTTPException(status_code=403, detail="Not authorized to delete this report")
 
 
@@ -144,13 +238,18 @@ class ReportDetailResponse(Response):
     doctor: str
     submitTime: date
     current_status: ReportStatus
+<<<<<<< HEAD
     diagnose: Optional[str] = None
+=======
+    diagnose: str | None
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     comments: typing.List[CommentModel] = []
 
 
 @router.post("/api/report/detail")
 def getReportDetail(request: ReportDetailRequest):
     username = resolveAccountJwt(request.token)["account"]
+<<<<<<< HEAD
 
     report_data = load_report(request.id)
     if not report_data:
@@ -159,21 +258,40 @@ def getReportDetail(request: ReportDetailRequest):
     try:
         report_data["submitTime"] = date.fromisoformat(report_data["submitTime"])
 
+=======
+    
+    report_data = load_report(request.id)
+    if not report_data:
+        raise HTTPException(status_code=404, detail="Report not found")
+        
+    try:
+        report_data["submitTime"] = date.fromisoformat(report_data["submitTime"])
+        
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
         comments = []
         raw_comments = get_report_comments(request.id)
         for comment_data in raw_comments:
             comments.append(CommentModel(**comment_data))
+<<<<<<< HEAD
 
+=======
+                    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
         resp = ReportDetailResponse(**report_data)
         resp.comments = comments
         return resp
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 class DiagnoseRequest(TokenRequest):
     id: str
     diagnose: str
 
+<<<<<<< HEAD
 @router.post('/api/report/diagnose/submit')
 def submitDiagnose(request: DiagnoseRequest):
     username = resolveAccountJwt(request.token)["account"]
@@ -191,11 +309,32 @@ def submitDiagnose(request: DiagnoseRequest):
     report_data['diagnose'] = request.diagnose
     report_data['current_status'] = ReportStatus.Completed
 
+=======
+
+@router.post('/api/report/diagnose/submit')
+def submitDiagnose(request: DiagnoseRequest):
+    
+    username = resolveAccountJwt(request.token)["account"]
+    
+    report_data = load_report(request.id)
+    if not report_data:
+        raise HTTPException(status_code=404, detail="Report not found")
+        
+    # 鉴权检查医生是否匹配
+    if report_data.get('doctor') != username:
+        raise HTTPException(status_code=403, detail="Not authorized to diagnose this report")
+        
+    # 更新报告状态和诊断结果
+    report_data['diagnose'] = request.diagnose
+    report_data['current_status'] = ReportStatus.Completed
+    
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     # 保存更新后的报告
     save_report(report_data)
     delete_report(request.id)
     return Response()
 
+<<<<<<< HEAD
 #
 # class UploadResponse(Response):
 #     fileId: str
@@ -358,3 +497,19 @@ def submitDiagnose(request: DiagnoseRequest):
 #         report.current_status = ReportStatus.Completed
 #         session.commit()
 #         return Response()
+=======
+# #算法接口备份
+# @router.post("/algorithm/predict")
+# async def predict_image(file: UploadFile = File(...)):  # 接受一个图片文件输入
+
+#     contents = await file.read()
+#     image_np = np.asarray(bytearray(contents), dtype=np.uint8)
+#     img = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
+#     try:
+#         data_json,image_id = predict(img)  # 预测过程，将所需数据保存并返回（这里可以保存到数据库）
+#     except Exception as e:
+#         print(e)
+
+  
+#     return str(data_json),image_id
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from typing import Any, Optional
 import os,time
 import shutil
@@ -19,6 +20,27 @@ router = APIRouter()
 
 
 class Form(BaseModel):#表单格式
+=======
+from typing import Any
+from datetime import date
+import os,time
+from fastapi import APIRouter, HTTPException
+from fastapi.requests import Request
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, ConfigDict
+from database.storage import load_accounts, load_user_detail, save_user_detail, save_user_avatar
+from database.table import UserType
+from database.table import UserSex
+from utils.response import Response
+from utils import resolveAccountJwt
+from utils.request import TokenRequest
+from fastapi import FastAPI, File, UploadFile
+from database.api import uploadImage,uploadavatar
+router = APIRouter()
+
+
+class Form(BaseModel):
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     def __init__(self, /, **data: Any):
         super().__init__(**data)
 
@@ -61,6 +83,19 @@ async def user(request: TokenRequest):
         return Response(code=31, message="用户不存在")
 
 
+<<<<<<< HEAD
+=======
+# @router.post("/api/user")
+# async def user(request: TokenRequest):
+#     username = resolveAccountJwt(request.token)["account"]
+#     accounts = load_accounts()
+#     user_data = accounts.get(username)
+#     if user_data:
+#         return username,user_data
+#     return Response(code=31, message="用户不存在")
+
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 @router.post("/api/info")
 async def info(request: TokenRequest):
     username = resolveAccountJwt(request.token)["account"]
@@ -77,12 +112,17 @@ class SubmitInfoRequest(TokenRequest):
 @router.post("/api/submitInfo")
 async def submitInfo(request: SubmitInfoRequest):
     username = resolveAccountJwt(request.token)["account"]
+<<<<<<< HEAD
     request.form.birth = request.form.birth.isoformat()  # 将datatime格式转为字符串，这样子才符合json格式
+=======
+    request.form.birth = request.form.birth.isoformat()#将datatime格式转为字符串，这样子才符合json格式
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
     form_data = request.form.model_dump()
     save_user_detail(username, form_data)
     return Response()
 
 
+<<<<<<< HEAD
 class AvatarRequest(TokenRequest):
     id: str
 class ImageResponse(Response):
@@ -236,6 +276,12 @@ async def submitInfo(request: SubmitInfoRequest):
         return Response()
 
 
+=======
+
+class ImageResponse(Response):
+    image: str
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
 class AvatarRequest(TokenRequest):
     id: int
 
@@ -255,6 +301,7 @@ async def submitAvatar(request: AvatarRequest):
         return Response()
 
 
+<<<<<<< HEAD
 # @router.post("/api/uploadAvatar")
 # async def uploadAvatar(request: Request):
 #     token = request.headers.get("token", None)
@@ -282,3 +329,55 @@ async def avatar(request: TokenRequest):
             return StreamingResponse(open("default.png", "rb"))
     return StreamingResponse([detail.image.data])
 '''
+=======
+
+@router.post("/api/avatar") 
+async def avatar(request: TokenRequest):
+    # 从token获取用户名
+    username = resolveAccountJwt(request.token)["account"]
+    for ext in ['jpg', 'png', 'jpeg']:
+        image_path = f"storage/images/{username}.{ext}"
+        # 如果头像文件存在,返回头像
+        if os.path.exists(image_path):
+            return StreamingResponse(open(image_path, "rb"))
+    return StreamingResponse(open("default.png", "rb"))
+    # 返回头像图片流
+    
+#  # 从token获取用户名
+#     username = resolveAccountJwt(request.token)["account"]
+#     # 获取用户信息
+#     user_info = load_user_detail(username)
+#     # 如果用户信息不存在或没有头像,返回默认头像
+#     if user_info is None or 'avatar' not in user_info:
+#         return StreamingResponse(open("default.png", "rb"))
+#     # 获取头像ID
+#     avatar_id = user_info['avatar']
+#     # 构建头像图片路径
+#     image_path = f"storage/images/{avatar_id}.{avatar_id.split('.')[-1]}"
+#     # 如果头像文件不存在,返回默认头像
+#     if not os.path.exists(image_path):
+#         return StreamingResponse(open("default.png", "rb"))
+#     # 返回头像图片流
+#     return StreamingResponse(open(image_path, "rb"))
+
+
+@router.post("/api/uploadimage/")
+async def create_upload_file(requset:str,file: UploadFile | None = None):
+    if not file:
+        return {"message": "No upload file sent"}
+    else:
+        username = requset
+        #user_info = load_user_detail(username) or {}
+        # 读取上传文件的内容
+        image_data = await file.read()
+        # 从原始文件名获取扩展名
+        image_ext = file.filename.split('.')[-1]
+        # 生成唯一文件名(使用时间戳)
+        save_name = save_user_avatar(username, image_ext, image_data)
+        return {"filename": save_name}
+
+
+
+
+
+>>>>>>> 38dbfca60a1a7c61d649edf8a9b5fdef8588640a
