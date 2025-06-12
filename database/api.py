@@ -37,6 +37,10 @@ def deleteInfo(username: str):
         os.remove(detail_file)
     except FileNotFoundError:
         pass
+def uploadImage(file_name: str, data: bytes) -> str:
+    format = file_name.split(".")[-1]
+    return save_image(data, format)
+
 def uploadavatar(user_name: str, file_name: str, data: bytes) -> str:
     format = file_name.split(".")[-1]
     return save_user_avatar(user_name,format,data )
