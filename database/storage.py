@@ -189,13 +189,27 @@ def update_report_status(report_id: str, status: str, diagnose: str = None):
 
 def delete_report(report_id: str) -> bool:
     """删除报告及其相关数据"""
+    report = load_report(report_id)
+    if report is None:
+        return False
+    
+    image_id = report.get('Result_img')[0]
+    img_name = report.get('images')[0]
+
     report_file = REPORTS_DIR / f"{report_id}.json"
     comment_dir = COMMENTS_DIR / report_id
+
+    
+    file_path = Path("storage/images") / f"{img_name}.jpg"
+
+    result_img_path = Path("storage/reports/Result_image") / f"{image_id}.jpg"
 
     try:
         if report_file.exists():
             report_file.unlink()
-
+            file_path.unlink()
+            result_img_path.unlink()
+            
         if comment_dir.exists():
             shutil.rmtree(comment_dir)
 
