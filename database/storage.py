@@ -98,14 +98,7 @@ def save_report(report_data: Dict):
     with open(REPORTS_DIR / f"{report_id}.json", 'w', encoding='utf-8') as f:
         json.dump(report_data, f, ensure_ascii=False, indent=2)
     return report_id
-def save_report_com(report_data: Dict):
-    current_time = datetime.now().strftime("%Y%m%d%H%M")
 
-    report_id = f"{current_time}-{report_data['doctor']}-{report_data['user']}-{'complete'}"
-    report_data['id'] = report_id
-    with open(REPORTS_DIR / f"{report_id}.json", 'w', encoding='utf-8') as f:
-        json.dump(report_data, f, ensure_ascii=False, indent=2)
-    return report_id
 
 def load_report(report_id: str) -> Optional[Dict]:
     report_file = REPORTS_DIR / f"{report_id}.json"
@@ -218,6 +211,24 @@ def delete_report(report_id: str) -> bool:
         print(f"Error deleting report: {e}")
         return False
 
+
+def delete_report_nopicture(report_id: str) -> bool:
+    """删除报告及其相关数据"""
+
+    report_file = REPORTS_DIR / f"{report_id}.json"
+    comment_dir = COMMENTS_DIR / report_id
+
+    try:
+        if report_file.exists():
+            report_file.unlink()
+            
+        if comment_dir.exists():
+            shutil.rmtree(comment_dir)
+
+        return True
+    except Exception as e:
+        print(f"Error deleting report: {e}")
+        return False
 
 def save_doctor_info(doctor_id: str, info: Dict):
     doctor_file = USERS_DIR / "doctors" / f"{doctor_id}.json"

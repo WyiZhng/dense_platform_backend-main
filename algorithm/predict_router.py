@@ -7,7 +7,7 @@ from fastapi.background import BackgroundTasks
 from pydantic import BaseModel
 from dense_platform_backend_main.database.api import teechLevel, teechLevel2
 from dense_platform_backend_main.database.table import ImageType, ReportStatus
-from dense_platform_backend_main.database.storage import save_report_com
+from dense_platform_backend_main.database.storage import save_report
 from dense_platform_backend_main.utils.request import TokenRequest
 from dense_platform_backend_main.utils.response import Response
 from dense_platform_backend_main.utils import resolveAccountJwt
@@ -116,11 +116,12 @@ async def predict_image(request: ReportRequest, background_tasks: BackgroundTask
             
             # 保存报告（线程池执行）
             username = resolveAccountJwt(request.token)["account"]
+            
             report_data = {
                 "user": username,
                 "doctor": request.doctor,
                 "submitTime": str(date.today()),
-                "current_status": ReportStatus.Completed,
+                "current_status": ReportStatus.Checking,
                 "images": request.images,
                 "diagnose": diag,
                 "Result_img": [image_id] if image_id else []
@@ -128,7 +129,7 @@ async def predict_image(request: ReportRequest, background_tasks: BackgroundTask
             
             await asyncio.get_event_loop().run_in_executor(
                 executor, 
-                lambda: save_report_com(report_data)
+                lambda: save_report(report_data)
             )
             
         except Exception as e:

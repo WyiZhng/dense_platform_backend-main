@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from dense_platform_backend_main.database.storage import (
     save_report, load_report, get_user_reports,
     save_comment, get_report_comments,
-    save_report_image, get_report_images,
+    save_report_image, get_report_images,delete_report_nopicture,
     delete_report
 )
 from dense_platform_backend_main.database.api import *
@@ -191,8 +191,9 @@ def submitDiagnose(request: DiagnoseRequest):
 
     # 保存更新后的报告
     save_report(report_data)
-    delete_report(request.id)
+    delete_report_nopicture(request.id)
     return Response()
+
 
 #
 # class UploadResponse(Response):
