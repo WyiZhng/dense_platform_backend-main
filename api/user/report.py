@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import typing
 from typing import Optional
 
@@ -58,7 +58,7 @@ class Report(BaseModel):
     id: str
     user: str
     doctor: str
-    submitTime: date
+    submitTime: datetime
     current_status: ReportStatus
 
 
@@ -73,10 +73,11 @@ async def getReports(request: GetReportRequest):
     user_data = accounts.get(username)
     type = user_data['type']
     reports = []
-    raw_reports = get_user_reports(username,type)
+    raw_reports = get_user_reports(username, type)
     for report_data in raw_reports:
         try:
-            report_data["submitTime"] = date.fromisoformat(report_data["submitTime"])
+            # 将字符串时间转换为datetime对象，然后只保留日期部分
+            report_data["submitTime"] = datetime.fromisoformat(report_data["submitTime"])
             reports.append(Report(**report_data))
         except Exception as e:
             print(f"Error processing report: {e}")
@@ -141,7 +142,7 @@ class ReportDetailResponse(Response):
     id: str
     user: str
     doctor: str
-    submitTime: date
+    submitTime: datetime
     current_status: ReportStatus
     diagnose: Optional[str] = None
     comments: typing.List[CommentModel] = []
@@ -156,8 +157,7 @@ def getReportDetail(request: ReportDetailRequest):
         raise HTTPException(status_code=404, detail="Report not found")
 
     try:
-        report_data["submitTime"] = date.fromisoformat(report_data["submitTime"])
-
+        report_data["submitTime"] = datetime.fromisoformat(report_data["submitTime"])
         comments = []
         raw_comments = get_report_comments(request.id)
         for comment_data in raw_comments:

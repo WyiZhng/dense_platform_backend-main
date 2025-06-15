@@ -45,7 +45,7 @@ async def register(request: RegisterRequest):
     accounts = load_accounts()
 
     if request.username in accounts:
-        return LoginResponse(code=32, message="已存在的账号", token=None)
+        return LoginResponse(code=32, message="已存在的账号，如果忘记密码请联系管理员，或者更换账号ID重新注册", token=None)
 
     accounts[request.username] = {
         'password': request.password,

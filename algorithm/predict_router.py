@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import typing
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -120,7 +120,7 @@ async def predict_image(request: ReportRequest, background_tasks: BackgroundTask
             report_data = {
                 "user": username,
                 "doctor": request.doctor,
-                "submitTime": str(date.today()),
+                "submitTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "current_status": ReportStatus.Checking,
                 "images": request.images,
                 "diagnose": diag,
