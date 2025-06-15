@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.requests import Request
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import inspect
-from dense_platform_backend_main.database.storage import load_accounts, load_user_detail, save_user_detail, save_user_avatar
+from dense_platform_backend_main.database.storage import load_accounts, load_user_detail, save_user_detail, save_user_avatar,delete_avatars,delete_image
 from dense_platform_backend_main.database.api import *
 from dense_platform_backend_main.database.table import UserSex
 from dense_platform_backend_main.utils.response import Response
@@ -91,27 +91,29 @@ class ImageResponse(Response):
 @router.post("/api/submitAvatar")
 async def submitAvatar(request: AvatarRequest):
     username = resolveAccountJwt(request.token)["account"]
-
     # 假设图片存储在 storage/images 目录下
-    image_path = f"storage/images/{request.id}.jpg"
-
-    # 检查图片是否存在
-    if not os.path.exists(image_path):
+    found = False
+    delete_avatars(username)
+    for ext in ['jpg', 'png', 'jpeg']:
+        image_path = f"storage/images/{request.id}.{ext}"
+        if os.path.exists(image_path):
+            # 执行文件复制操作
+            user_avatar_dir = "storage/avatars"
+            os.makedirs(user_avatar_dir, exist_ok=True)
+            # 保留原始文件扩展名
+            new_avatar_path = f"{user_avatar_dir}/{username}.{ext}"
+            try:
+                shutil.copy2(image_path, new_avatar_path)
+                found = True
+                delete_image(request.id)
+                return Response()  
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to save avatar: {str(e)}")
+    
+    if not found:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    # 创建用户头像目录（如果不存在）
-    user_avatar_dir = "storage/avatars"
-    os.makedirs(user_avatar_dir, exist_ok=True)
-
-    # 用户头像的新路径
-    new_avatar_path = f"{user_avatar_dir}/{username}.jpg"
-
-    try:
-        # 复制图片到用户头像目录
-        shutil.copy2(image_path, new_avatar_path)
-        return Response()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save avatar: {str(e)}")
+    
 
 
 # @router.post("/api/submitAvatar")

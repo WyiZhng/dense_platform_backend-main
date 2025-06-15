@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 import uuid
 from fastapi import FastAPI, File, UploadFile
+#基于我终端运行目录下，F:\test\ultralytics-8.1.35\dense_platform_backend_main>python main.py ，则 Path("storage") 表示 F:\test\ultralytics-8.1.35\dense_platform_backend_main\storage
 STORAGE_ROOT = Path("storage")
 USERS_DIR = STORAGE_ROOT / "users"
 REPORTS_DIR = STORAGE_ROOT / "reports"
@@ -32,7 +33,7 @@ def save_accounts(accounts: Dict):
         json.dump(accounts, f, ensure_ascii=False, indent=2)
 
 def save_user_avatar(username: str, image_ext: str, image_data: bytes):
-    image_path = IMAGES_DIR / f"{username}.{image_ext}"
+    image_path = AVATARS_DIR / f"{username}.{image_ext}"
     with open(image_path, 'wb') as f:
         f.write(image_data)
     return username
@@ -210,8 +211,36 @@ def delete_report(report_id: str) -> bool:
     except Exception as e:
         print(f"Error deleting report: {e}")
         return False
-
-
+    
+def delete_image(image_name:str) -> bool:
+    image_dir = Path("storage/images")
+    deleted = False
+    for ext in ['jpg', 'png', 'jpeg']:
+        image_path = image_dir / f"{image_name}.{ext}"  # 修正：直接使用 image_id
+        if image_path.exists():
+            try:
+                image_path.unlink()
+                deleted = True  # 标记已删除至少一个文件
+            except Exception as e:
+                print(f"Error deleting {image_path}: {e}")
+    return deleted  # 返回实际删除结果
+    
+def delete_avatars(image_id: str) -> bool:
+    avatar_dir = Path("storage/avatars")
+    deleted = False
+    
+    for ext in ['jpg', 'png', 'jpeg']:
+        image_path = avatar_dir / f"{image_id}.{ext}"  # 修正：直接使用 image_id
+        
+        if image_path.exists():
+            try:
+                image_path.unlink()
+                deleted = True  # 标记已删除至少一个文件
+            except Exception as e:
+                print(f"Error deleting {image_path}: {e}")
+    
+    return deleted  # 返回实际删除结果
+                
 def delete_report_nopicture(report_id: str) -> bool:
     """删除报告及其相关数据"""
 
