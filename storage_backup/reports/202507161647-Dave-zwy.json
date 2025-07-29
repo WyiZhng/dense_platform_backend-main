@@ -1,0 +1,14 @@
+{
+  "user": "zwy",
+  "doctor": "Dave",
+  "submitTime": "2025-07-16 16:47:17",
+  "current_status": 0,
+  "images": [
+    "a06f7799-211f-4501-bbec-3d5811d97a38"
+  ],
+  "diagnose": "您有 8 颗较为轻度龋齿，请及时治疗。",
+  "Result_img": [
+    "eb43fe3a-298f-47a1-876c-3e788dbdf31a"
+  ],
+  "id": "202507161647-Dave-zwy"
+}

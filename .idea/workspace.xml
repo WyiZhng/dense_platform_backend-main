@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8c7b2383-9735-4aa6-9214-2fcfbc89314d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/dense_platform_backend_main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dense_platform_backend.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/easycode.ignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/easycode/codeContext.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/easycode/codebase-v2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/easycode/rc-output.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alembic.ini" beforeDir="false" afterPath="$PROJECT_DIR$/alembic.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alembic/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/alembic/env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/algorithm/predict_class.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/algorithm/predict_router.py" beforeDir="false" afterPath="$PROJECT_DIR$/algorithm/predict_router.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/algorithm/predictor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/doctor/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/doctor/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/doctor/info.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/doctor/info.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/user/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/user/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/user/info.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/user/info.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/user/login.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/user/login.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/user/report.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/user/report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/table.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/avatars/TestUser1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/avatars/口腔科郑武_Test.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/123.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/42b69eb7-0b99-434a-ac9d-b1619ed7e6f7.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/61ab22e9-6c6c-4b0c-8ff5-d8bee40adfc1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/63932011-a141-4092-8c3e-bb80db272802.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/700e095f-b32d-4d76-9ac3-090f522fd47e.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/725a8a72-cd70-4ef7-8d89-690e5fd3581e.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/747a70cd-2fb5-4e16-a945-44bb56c1c292.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/758bc78e-db75-4af2-a50b-6de5019394ef.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/Dave.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/a0129bb8-bf94-4f9f-b5b6-ce907be9f530.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/a114ed25-9268-496f-bf12-008259ec2787.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/a2d34e74-cde6-4ce1-870b-f928b1661184.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/b1267b36-1ab8-4208-8667-2b56779421d8.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/b2bfbe36-847c-47a4-bcb2-6cfe2302e63e.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/dd9791a1-421e-4597-9b7b-824a6e1abde2.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/ef30a1dd-b584-4f89-b8c8-cbe871c7a053.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/f4bacfbc-3f46-4465-90af-2a5f9506afa7.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/images/hqc.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/reports/202412091701-Dave-zwy.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/reports/202412091706-Dave-zwy.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/reports/202412091707-Dave-zgd.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/reports/202412091834-Dave-Dave.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/reports/202412092314-Dave-zwy.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/reports/202412112315-Tom-zwy.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/reports/202412112355-Dave-zwy.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/users/accounts.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/users/details/Dave.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/users/details/hqc.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/users/details/zwy.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/response.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/response.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 1
+}]]></component>
+  <component name="ProjectId" id="30PrNcHLd5GKT7SuXhDC24A8sL8" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.main.executor": "Debug",
+    "Python.table.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "F:/dense-project/dense_platform_backend_main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="dense_platform_backend_main" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-09665e90c3a7-b11f5e8da5ad-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.15026.15" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8c7b2383-9735-4aa6-9214-2fcfbc89314d" name="Changes" comment="" />
+      <created>1753540009721</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1753540009721</updated>
+      <workItem from="1753540010962" duration="3727000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/api/doctor/report_management_backup.py</url>
+          <line>834</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/dense_platform_backend_main$main.coverage" NAME="main Coverage Results" MODIFIED="1753543378528" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/dense_platform_backend_main$table.coverage" NAME="table Coverage Results" MODIFIED="1753542600196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database" />
+  </component>
+</project>

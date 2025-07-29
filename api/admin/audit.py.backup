@@ -1,0 +1,357 @@
+"""
+Audit and Monitoring API
+
+This module provides API endpoints for audit logging and security monitoring.
+"""
+
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timedelta
+from fastapi import APIRouter, Depends, Request, Query
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
+
+from dense_platform_backend_main.database.table import UserType
+from dense_platform_backend_main.utils.response import Response
+from dense_platform_backend_main.services.audit_service import audit_service, AuditEventType, SeverityLevel
+from dense_platform_backend_main.api.auth.middleware import RequireUserType
+from dense_platform_backend_main.api.auth.session import get_db
+
+router = APIRouter()
+
+
+class AuditReportRequest(BaseModel):
+    """Request model for audit reports"""
+    user_id: Optional[str] = None
+    event_type: Optional[str] = None
+    hours: Optional[int] = 24
+    limit: Optional[int] = 100
+
+
+class SecurityReportRequest(BaseModel):
+    """Request model for security reports"""
+    hours: Optional[int] = 24
+
+
+class ActivityReportRequest(BaseModel):
+    """Request model for user activity reports"""
+    user_id: str
+    hours: Optional[int] = 24
+
+
+@router.get("/api/admin/audit/events")
+async def get_audit_events(
+    user_id: Optional[str] = Query(None, description="Filter by user ID"),
+    event_type: Optional[str] = Query(None, description="Filter by event type"),
+    hours: int = Query(24, description="Hours to look back"),
+    limit: int = Query(100, description="Maximum number of events"),
+    session_info: Dict[str, Any] = RequireUserType(UserType.Doctor),  # Admin access
+    db: Session = Depends(get_db)
+):
+    """Get audit events (Admin only)"""
+    try:
+        # Convert event_type string to enum if provided
+        event_type_enum = None
+        if event_type:
+            try:
+                event_type_enum = AuditEventType(event_type)
+            except ValueError:
+                return Response(code=400, message=f"Invalid event type: {event_type}")
+        
+        # Get audit events
+        events = audit_service.get_audit_events(
+            user_id=user_id,
+            event_type=event_type_enum,
+            hours=hours,
+            limit=limit
+        )
+        
+        return Response(
+            code=0,
+            message="获取审计事件成功",
+            data={
+                "events": events,
+                "total_count": len(events),
+                "filters": {
+                    "user_id": user_id,
+                    "event_type": event_type,
+                    "hours": hours,
+                    "limit": limit
+                }
+            }
+        )
+        
+    except Exception as e:
+        return Response(code=500, message=f"获取审计事件失败: {str(e)}")
+
+
+@router.get("/api/admin/audit/security-report")
+async def get_security_report(
+    hours: int = Query(24, description="Hours to look back"),
+    session_info: Dict[str, Any] = RequireUserType(UserType.Doctor),  # Admin access
+    db: Session = Depends(get_db)
+):
+    """Get security monitoring report (Admin only)"""
+    try:
+        # Get security report
+        report = audit_service.get_security_report(hours)
+        
+        # Get recent alerts
+        alerts = audit_service.security_monitor.get_recent_alerts(hours)
+        alert_data = [
+            {
+                "alert_id": alert.alert_id,
+                "alert_type": alert.alert_type,
+                "severity": alert.severity.value,
+                "message": alert.message,
+                "details": alert.details,
+                "timestamp": alert.timestamp.isoformat()
+            }
+            for alert in alerts
+        ]
+        
+        return Response(
+            code=0,
+            message="获取安全报告成功",
+            data={
+                "summary": report,
+                "recent_alerts": alert_data,
+                "report_period_hours": hours,
+                "generated_at": datetime.now().isoformat()
+            }
+        )
+        
+    except Exception as e:
+        return Response(code=500, message=f"获取安全报告失败: {str(e)}")
+
+
+@router.get("/api/admin/audit/user-activity/{user_id}")
+async def get_user_activity_report(
+    user_id: str,
+    hours: int = Query(24, description="Hours to look back"),
+    session_info: Dict[str, Any] = RequireUserType(UserType.Doctor),  # Admin access
+    db: Session = Depends(get_db)
+):
+    """Get user activity report (Admin only)"""
+    try:
+        # Get user activity report
+        report = audit_service.get_user_activity_report(user_id, hours)
+        
+        # Get detailed activities
+        activities = audit_service.activity_tracker.get_user_activity(user_id, hours)
+        activity_data = [
+            {
+                "timestamp": activity["timestamp"].isoformat(),
+                "activity_type": activity["activity_type"],
+                "details": activity["details"]
+            }
+            for activity in activities
+        ]
+        
+        return Response(
+            code=0,
+            message="获取用户活动报告成功",
+            data={
+                "summary": report,
+                "detailed_activities": activity_data,
+                "report_period_hours": hours,
+                "generated_at": datetime.now().isoformat()
+            }
+        )
+        
+    except Exception as e:
+        return Response(code=500, message=f"获取用户活动报告失败: {str(e)}")
+
+
+@router.post("/api/admin/audit/export")
+async def export_audit_logs(
+    start_date: datetime,
+    end_date: datetime,
+    format: str = "json",
+    session_info: Dict[str, Any] = RequireUserType(UserType.Doctor),  # Admin access
+    db: Session = Depends(get_db)
+):
+    """Export audit logs for a date range (Admin only)"""
+    try:
+        # Validate date range
+        if start_date >= end_date:
+            return Response(code=400, message="开始日期必须早于结束日期")
+        
+        # Check if date range is reasonable (not too large)
+        if (end_date - start_date).days > 90:
+            return Response(code=400, message="导出日期范围不能超过90天")
+        
+        # Export audit logs
+        export_result = audit_service.export_audit_logs(start_date, end_date, format)
+        
+        # Log the export action
+        audit_service.log_audit_event(
+            event_type=AuditEventType.DATA_EXPORT,
+            severity=SeverityLevel.MEDIUM,
+            user_id=session_info["user_id"],
+            resource="audit_logs",
+            action="export",
+            details={
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "format": format,
+                "exported_by": session_info["user_id"]
+            },
+            success=True
+        )
+        
+        return Response(
+            code=0,
+            message="审计日志导出成功",
+            data={
+                "export_info": export_result,
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "format": format,
+                "exported_at": datetime.now().isoformat()
+            }
+        )
+        
+    except Exception as e:
+        return Response(code=500, message=f"导出审计日志失败: {str(e)}")
+
+
+@router.get("/api/admin/audit/dashboard")
+async def get_audit_dashboard(
+    session_info: Dict[str, Any] = RequireUserType(UserType.Doctor),  # Admin access
+    db: Session = Depends(get_db)
+):
+    """Get audit dashboard summary (Admin only)"""
+    try:
+        # Get various reports for dashboard
+        security_report_24h = audit_service.get_security_report(24)
+        security_report_7d = audit_service.get_security_report(24 * 7)
+        
+        # Get recent critical alerts
+        recent_alerts = audit_service.security_monitor.get_recent_alerts(24)
+        critical_alerts = [
+            alert for alert in recent_alerts
+            if alert.severity in [SeverityLevel.HIGH, SeverityLevel.CRITICAL]
+        ]
+        
+        # Get system health indicators
+        dashboard_data = {
+            "security_summary": {
+                "last_24h": security_report_24h,
+                "last_7d": security_report_7d
+            },
+            "critical_alerts": [
+                {
+                    "alert_id": alert.alert_id,
+                    "alert_type": alert.alert_type,
+                    "severity": alert.severity.value,
+                    "message": alert.message,
+                    "timestamp": alert.timestamp.isoformat()
+                }
+                for alert in critical_alerts[:10]  # Latest 10 critical alerts
+            ],
+            "system_health": {
+                "audit_logging_active": True,
+                "security_monitoring_active": True,
+                "last_updated": datetime.now().isoformat()
+            },
+            "quick_stats": {
+                "total_alerts_24h": security_report_24h.get("total_alerts", 0),
+                "critical_alerts_24h": len(critical_alerts),
+                "high_severity_alerts_24h": len([
+                    alert for alert in recent_alerts
+                    if alert.severity == SeverityLevel.HIGH
+                ])
+            }
+        }
+        
+        return Response(
+            code=0,
+            message="获取审计仪表板成功",
+            data=dashboard_data
+        )
+        
+    except Exception as e:
+        return Response(code=500, message=f"获取审计仪表板失败: {str(e)}")
+
+
+@router.get("/api/admin/audit/event-types")
+async def get_audit_event_types(
+    session_info: Dict[str, Any] = RequireUserType(UserType.Doctor),  # Admin access
+    db: Session = Depends(get_db)
+):
+    """Get available audit event types (Admin only)"""
+    try:
+        event_types = [
+            {
+                "value": event_type.value,
+                "name": event_type.name,
+                "description": _get_event_type_description(event_type)
+            }
+            for event_type in AuditEventType
+        ]
+        
+        severity_levels = [
+            {
+                "value": severity.value,
+                "name": severity.name,
+                "description": _get_severity_description(severity)
+            }
+            for severity in SeverityLevel
+        ]
+        
+        return Response(
+            code=0,
+            message="获取审计事件类型成功",
+            data={
+                "event_types": event_types,
+                "severity_levels": severity_levels
+            }
+        )
+        
+    except Exception as e:
+        return Response(code=500, message=f"获取审计事件类型失败: {str(e)}")
+
+
+def _get_event_type_description(event_type: AuditEventType) -> str:
+    """Get description for audit event type"""
+    descriptions = {
+        AuditEventType.LOGIN_SUCCESS: "用户成功登录",
+        AuditEventType.LOGIN_FAILED: "用户登录失败",
+        AuditEventType.LOGOUT: "用户注销",
+        AuditEventType.PASSWORD_CHANGE: "密码修改",
+        AuditEventType.ACCOUNT_LOCKED: "账户被锁定",
+        AuditEventType.ACCESS_GRANTED: "访问权限授予",
+        AuditEventType.ACCESS_DENIED: "访问权限拒绝",
+        AuditEventType.PERMISSION_CHANGE: "权限变更",
+        AuditEventType.ROLE_CHANGE: "角色变更",
+        AuditEventType.DATA_CREATE: "数据创建",
+        AuditEventType.DATA_READ: "数据读取",
+        AuditEventType.DATA_UPDATE: "数据更新",
+        AuditEventType.DATA_DELETE: "数据删除",
+        AuditEventType.DATA_EXPORT: "数据导出",
+        AuditEventType.SYSTEM_START: "系统启动",
+        AuditEventType.SYSTEM_STOP: "系统停止",
+        AuditEventType.CONFIG_CHANGE: "配置变更",
+        AuditEventType.BACKUP_CREATE: "备份创建",
+        AuditEventType.BACKUP_RESTORE: "备份恢复",
+        AuditEventType.SECURITY_VIOLATION: "安全违规",
+        AuditEventType.RATE_LIMIT_EXCEEDED: "频率限制超出",
+        AuditEventType.SUSPICIOUS_ACTIVITY: "可疑活动",
+        AuditEventType.MALWARE_DETECTED: "恶意软件检测",
+        AuditEventType.USER_CREATE: "用户创建",
+        AuditEventType.USER_UPDATE: "用户更新",
+        AuditEventType.USER_DELETE: "用户删除",
+        AuditEventType.ADMIN_ACTION: "管理员操作"
+    }
+    return descriptions.get(event_type, "未知事件类型")
+
+
+def _get_severity_description(severity: SeverityLevel) -> str:
+    """Get description for severity level"""
+    descriptions = {
+        SeverityLevel.LOW: "低风险 - 常规操作",
+        SeverityLevel.MEDIUM: "中等风险 - 需要关注",
+        SeverityLevel.HIGH: "高风险 - 需要立即处理",
+        SeverityLevel.CRITICAL: "严重风险 - 紧急处理"
+    }
+    return descriptions.get(severity, "未知严重程度")
