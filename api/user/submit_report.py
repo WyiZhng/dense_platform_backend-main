@@ -1,8 +1,9 @@
 import typing
 import uuid
 import base64
-import aiohttp
+import httpx
 import asyncio
+import json
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
@@ -13,6 +14,7 @@ from dense_platform_backend_main.api.auth.session import get_db, SessionService
 from dense_platform_backend_main.database.table import DenseReport, ReportStatus, DenseImage, Image, ImageType, ResultImage
 from dense_platform_backend_main.services.database_storage_service import DatabaseStorageService
 from dense_platform_backend_main.config.algorithm_config import algorithm_config
+from dense_platform_backend_main.config.deepseek_config import deepseek_config
 
 router = APIRouter()
 
@@ -39,13 +41,12 @@ async def call_algorithm_service(image_data: bytes) -> dict:
     try:
         # 将图像数据编码为base64
         image_base64 = base64.b64encode(image_data).decode('utf-8')
-        
         # 准备请求数据
         request_data = {
             "image_data": image_base64,
             "image_format": "jpg"
         }
-        
+        print("调用算法服务")
         # 调用算法服务
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -78,6 +79,105 @@ async def call_algorithm_service(image_data: bytes) -> dict:
         }
 
 
+async def call_deepseek_api(detections: list) -> dict:
+    """调用Deepseek API生成医学诊断报告"""
+    try:
+        # 统计不同类型的检测结果
+        class_counts = {}
+        for detection in detections:
+            class_name = detection.get("class_name", "未知")
+            confidence = detection.get("confidence", 0)
+            # 只统计置信度较高的检测结果
+            if confidence > 0.5:
+                class_counts[class_name] = class_counts.get(class_name, 0) + 1
+        
+        # 构建给Deepseek的提示词
+        detection_summary = f"检测到的牙齿问题统计：{class_counts}\n"
+        detection_summary += f"总检测数量：{len(detections)}\n"
+        detection_summary += "详细检测结果(yolo算法结果)：\n"
+        for i, detection in enumerate(detections[:10]):  # 只显示前10个检测结果
+            detection_summary += f"- 第{i+1}个：类型{detection.get('class_name', '未知')}，置信度{detection.get('confidence', 0):.3f}\n"
+        
+        prompt = f"""你是一位专业的牙科医生，请根据以下AI检测结果生成一份简洁的医学诊断报告，以医生的日常口吻回答。
+
+{detection_summary}
+
+请生成一份包含以下内容的诊断报告，以医生的日常口吻：
+1. 简要的诊断结论（如：您有X颗什么程度的龋齿，在口腔的什么位置）
+2. 治疗建议（如：请立即就医治疗，平日要注意什么）
+3. 语言要专业但易懂，适合患者阅读
+4. 控制在100字以内
+
+请直接返回诊断报告内容，不要包含其他解释。"""
+        
+        # Deepseek API配置
+        deepseek_url = deepseek_config.get_api_url()
+        deepseek_api_key = deepseek_config.get_api_key()
+        
+        headers = {
+            "Authorization": f"Bearer {deepseek_api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        request_data = {
+            "model": deepseek_config.get_model(),
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "max_tokens": deepseek_config.get_max_tokens(),
+            "temperature": deepseek_config.get_temperature()
+        }
+        
+        print(f"🤖 开始调用Deepseek API生成诊断报告")
+        print(f"📝 检测结果统计: {class_counts}")
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                deepseek_url,
+                json=request_data,
+                headers=headers,
+                timeout=deepseek_config.get_timeout()
+            )
+            if response.status_code == 200:
+                result = response.json()
+                diagnosis = result["choices"][0]["message"]["content"].strip()
+                print(f"✅ Deepseek诊断报告生成成功: {diagnosis[:50]}...")
+                return {
+                    "success": True,
+                    "diagnosis": diagnosis
+                }
+            else:
+                error_text = response.text
+                print(f"❌ Deepseek API调用失败: {response.status_code} - {error_text}")
+                # 如果Deepseek调用失败，返回默认诊断
+                default_diagnosis = f"检测到{len(detections)}个异常区域，建议咨询专业牙科医生进行详细检查。"
+                return {
+                    "success": False,
+                    "diagnosis": default_diagnosis,
+                    "error": f"Deepseek API错误: {response.status_code}"
+                }
+                    
+    except asyncio.TimeoutError:
+        print(f"❌ Deepseek API调用超时")
+        default_diagnosis = f"检测到{len(detections)}个异常区域，建议咨询专业牙科医生进行详细检查。"
+        return {
+            "success": False,
+            "diagnosis": default_diagnosis,
+            "error": "Deepseek API调用超时"
+        }
+    except Exception as e:
+        print(f"❌ 调用Deepseek API失败: {str(e)}")
+        default_diagnosis = f"检测到{len(detections)}个异常区域，建议咨询专业牙科医生进行详细检查。"
+        return {
+            "success": False,
+            "diagnosis": default_diagnosis,
+            "error": f"调用Deepseek API失败: {str(e)}"
+        }
+
+
 async def process_algorithm_detection(report_id: int, image_id: int):
     """处理算法检测并保存结果"""
     # 创建新的数据库会话
@@ -98,23 +198,38 @@ async def process_algorithm_detection(report_id: int, image_id: int):
         # 2. 调用算法服务
         algorithm_result = await call_algorithm_service(image.data)
         
+        print(f"🔍 算法服务调用结果: {algorithm_result}")
+        
         if not algorithm_result["success"]:
             print(f"❌ 算法服务调用失败: {algorithm_result['error']}")
             # 更新报告状态为失败
-            report = db.query(DenseReport).filter(DenseReport.id == report_id).first()
-            if report:
-                report.current_status = ReportStatus.Failed
-                report.diagnose = f"检测失败: {algorithm_result['error']}"
-                db.commit()
+            try:
+                report = db.query(DenseReport).filter(DenseReport.id == report_id).first()
+                if report:
+                    # 使用Error状态表示检测失败
+                    report.current_status = ReportStatus.Error
+                    report.diagnose = f"检测失败: {algorithm_result['error']}"
+                    db.commit()
+                    print(f"✅ 算法服务失败时报告状态已更新为Error: 报告ID={report_id}")
+                else:
+                    print(f"❌ 未找到报告ID={report_id}")
+            except Exception as e:
+                print(f"❌ 更新报告状态时发生异常: {e}")
+                db.rollback()
             return
         
         # 3. 处理算法结果
         result_data = algorithm_result["data"]
         detections = result_data.get("detections", [])
-        diagnosis = result_data.get("diagnosis", "")
         result_image_base64 = result_data.get("result_image")
         
-        print(f"🎯 算法检测完成: {len(detections)} 个目标, 诊断: {diagnosis}")
+        print(f"🎯 算法检测完成: {len(detections)} 个目标")
+        
+        # 4. 调用Deepseek API生成诊断报告
+        deepseek_result = await call_deepseek_api(detections)
+        diagnosis = deepseek_result["diagnosis"]
+        
+        print(f"📋 诊断报告生成完成: {diagnosis[:50]}...")
         
         # 4. 保存结果图片
         result_image_id = None
@@ -182,11 +297,19 @@ async def process_algorithm_detection(report_id: int, image_id: int):
         try:
             report = db.query(DenseReport).filter(DenseReport.id == report_id).first()
             if report:
-                report.current_status = ReportStatus.Failed
+                # 使用Error状态表示处理失败
+                report.current_status = ReportStatus.Error
                 report.diagnose = f"处理失败: {str(e)}"
                 db.commit()
-        except:
-            pass
+                print(f"✅ 报告状态已更新为Error: 报告ID={report_id}")
+            else:
+                print(f"❌ 未找到报告ID={report_id}")
+        except Exception as update_error:
+            print(f"❌ 更新报告状态失败: {update_error}")
+            db.rollback()
+    finally:
+        # 确保数据库会话被正确关闭
+        db.close()
 
 
 @router.post("/api/submitReport")

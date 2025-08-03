@@ -1,0 +1,52 @@
+# FastAPI/Python 后端忽略文件
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# # 环境/依赖
+# .env
+# .venv/
+# venv/
+# env/
+# Pipfile.lock
+# poetry.lock
+
+# # IDE/编辑器
+# .vscode/
+# .idea/
+# *.swp
+# *.swo
+
+# # 日志/临时文件
+# *.log
+# *.tmp
+# *.bak
+
+# # 数据/模型/备份
+# *.pt
+# *.zip
+# storage_backup/
+# logs/
+# DATABASE_SETUP_SUMMARY.md
+# default.png
+
+# # Alembic
+# alembic/versions/
+
+# # FastAPI/测试
+# test_*.py
+# *.http
+
+# # Docker
+# *.pid
+
+# # 其他
+# __init__.pyc
