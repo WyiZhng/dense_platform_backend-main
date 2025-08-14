@@ -11,13 +11,12 @@ build/
 *.db
 *.sqlite3
 
-# # 环境/依赖
-# .env
-# .venv/
-# venv/
-# env/
-# Pipfile.lock
-# poetry.lock
+# 环境/依赖
+.venv/
+venv/
+env/
+Pipfile.lock
+poetry.lock
 
 # # IDE/编辑器
 # .vscode/

@@ -55,7 +55,7 @@ class DatabaseStorageService:
             
         except Exception as e:
             db.rollback()
-            print(f"Error saving user detail: {e}")
+            # 保存用户详情失败
             return False
     
     @staticmethod
@@ -159,63 +159,93 @@ class DatabaseStorageService:
             Report ID if successful, None otherwise
         """
         try:
+            print(f"[DEBUG] save_report开始 - 报告数据: {report_data}")
+            
             # Create report record - handle date type for submitTime
             submit_time = report_data.get('submitTime')
+            print(f"[DEBUG] 原始submitTime: {submit_time}, 类型: {type(submit_time)}")
+            
             if isinstance(submit_time, str):
                 try:
-                    # Try to parse as datetime first, then extract date
-                    parsed_datetime = datetime.fromisoformat(submit_time.replace('Z', '+00:00'))
-                    submit_date = parsed_datetime.date()
+                    # Try to parse as datetime first and keep full datetime info
+                    submit_datetime = datetime.fromisoformat(submit_time.replace('Z', '+00:00'))
+                    print(f"[DEBUG] 解析为datetime: {submit_datetime}")
                 except ValueError:
                     try:
-                        # Try to parse as date directly
-                        submit_date = date.fromisoformat(submit_time)
+                        # Try to parse as date directly, then convert to datetime
+                        parsed_date = date.fromisoformat(submit_time)
+                        submit_datetime = datetime.combine(parsed_date, datetime.min.time())
+                        print(f"[DEBUG] 解析为date后转datetime: {submit_datetime}")
                     except ValueError:
-                        # If all fails, use today's date
-                        submit_date = date.today()
+                        # If all fails, use current datetime
+                        submit_datetime = datetime.now()
+                        print(f"[DEBUG] 使用当前时间: {submit_datetime}")
             elif isinstance(submit_time, datetime):
-                submit_date = submit_time.date()
+                submit_datetime = submit_time  # 保持完整的datetime信息
+                print(f"[DEBUG] 保持datetime类型: {submit_datetime}")
             elif isinstance(submit_time, date):
-                submit_date = submit_time
+                # 将date转换为datetime，时间设为00:00:00
+                submit_datetime = datetime.combine(submit_time, datetime.min.time())
+                print(f"[DEBUG] date转datetime: {submit_datetime}")
             else:
-                submit_date = date.today()
+                submit_datetime = datetime.now()  # 使用当前完整时间
+                print(f"[DEBUG] 其他类型，使用当前时间: {submit_datetime}")
             
+            print(f"[DEBUG] 创建DenseReport对象...")
             report = DenseReport(
                 user=report_data.get('user'),
                 doctor=report_data.get('doctor'),
-                submitTime=submit_date,
+                submitTime=submit_datetime,  # 使用完整的datetime信息
                 current_status=report_data.get('current_status', ReportStatus.Checking),
                 diagnose=report_data.get('diagnose')
             )
+            print(f"[DEBUG] DenseReport对象创建成功")
+            
+            print(f"[DEBUG] 添加report到数据库会话...")
             db.add(report)
+            print(f"[DEBUG] 执行flush获取ID...")
             db.flush()  # Get the ID
+            print(f"[DEBUG] flush成功，报告ID: {report.id}")
             
             # Save associated images if provided
             if 'images' in report_data:
+                print(f"[DEBUG] 保存源图片关联，图片数量: {len(report_data['images'])}")
                 for image_id in report_data['images']:
+                    print(f"[DEBUG] 关联源图片ID: {image_id}")
                     dense_image = DenseImage(
                         report=report.id,
                         image=int(image_id),
                         _type=ImageType.source
                     )
                     db.add(dense_image)
+                print(f"[DEBUG] 源图片关联完成")
             
             # Save result images if provided
             if 'Result_img' in report_data:
+                print(f"[DEBUG] 保存结果图片关联，图片数量: {len(report_data['Result_img'])}")
                 for image_id in report_data['Result_img']:
+                    print(f"[DEBUG] 关联结果图片ID: {image_id}")
                     dense_image = DenseImage(
                         report=report.id,
                         image=int(image_id),
                         _type=ImageType.result
                     )
                     db.add(dense_image)
+                print(f"[DEBUG] 结果图片关联完成")
             
+            print(f"[DEBUG] 执行数据库提交...")
             db.commit()
+            print(f"[DEBUG] 数据库提交成功，返回报告ID: {report.id}")
             return str(report.id)
             
         except Exception as e:
+            print(f"[DEBUG] save_report异常: {type(e).__name__}: {str(e)}")
+            print(f"[DEBUG] 异常详情: {repr(e)}")
+            import traceback
+            print(f"[DEBUG] 异常堆栈: {traceback.format_exc()}")
             db.rollback()
-            print(f"Error saving report: {e}")
+            print(f"[DEBUG] 数据库已回滚")
+            # 保存报告失败
             return None
     
     @staticmethod
@@ -266,7 +296,7 @@ class DatabaseStorageService:
             }
             
         except Exception as e:
-            print(f"Error loading report: {e}")
+            # 加载报告失败
             return None
     
     @staticmethod
@@ -312,7 +342,7 @@ class DatabaseStorageService:
                     from datetime import date
                     submit_time_str = date.today().isoformat()
                 
-                print(f"DEBUG: Report {report.id} submitTime: {report.submitTime} -> {submit_time_str}")
+                # 处理报告时间格式
                 
                 result.append({
                     "id": str(report.id),
@@ -328,7 +358,7 @@ class DatabaseStorageService:
             return result
             
         except Exception as e:
-            print(f"Error getting user reports: {e}")
+            # 获取用户报告失败
             return []
     
     @staticmethod
@@ -391,7 +421,7 @@ class DatabaseStorageService:
             return result
             
         except Exception as e:
-            print(f"Error getting report comments: {e}")
+            # 获取报告评论失败
             return []
     
     @staticmethod
@@ -442,15 +472,14 @@ class DatabaseStorageService:
             report = db.query(DenseReport).filter(DenseReport.id == int(report_id)).first()
             
             if not report:
-                print(f"Report {report_id} not found")
+                # 报告不存在
                 return False
             
             report_id_int = int(report_id)
-            print(f"Starting deletion process for report {report_id_int}")
+            # 开始删除报告流程
             
             # 1. 获取所有关联的dense_image记录
             dense_images = db.query(DenseImage).filter(DenseImage.report == report_id_int).all()
-            print(f"Found {len(dense_images)} dense_image records")
             
             # 2. 先处理DenseImage中的result_image引用
             # 获取所有result_image的ID
@@ -460,38 +489,30 @@ class DatabaseStorageService:
                     result_image_ids.append(dense_image.result_image)
             
             # 3. 删除关联的评论
-            print("Deleting comments")
             db.query(Comment).filter(Comment.report == report_id_int).delete()
             
             # 4. 删除dense_image关联表记录 - 必须在删除图片前先删除关联
-            print("Deleting dense_image records")
             db.query(DenseImage).filter(DenseImage.report == report_id_int).delete()
             
             # 5. 删除所有result_imgs表中与该报告关联的记录
-            print(f"Deleting result images for report {report_id_int}")
             db.query(ResultImage).filter(ResultImage.report_id == report_id_int).delete()
             
             # 6. 删除关联的原始图片
             for dense_image in dense_images:
                 if dense_image.image:
-                    print(f"Deleting source image {dense_image.image}")
                     image = db.query(Image).filter(Image.id == dense_image.image).first()
                     if image:
                         db.delete(image)
             
             # 7. 最后删除报告本身
-            print("Deleting report")
             db.delete(report)
             
             db.commit()
-            print(f"Successfully deleted report {report_id}")
             return True
             
         except Exception as e:
             db.rollback()
-            print(f"Error deleting report: {e}")
-            import traceback
-            traceback.print_exc()
+            # 删除报告失败
             return False
     
     @staticmethod
@@ -589,7 +610,7 @@ class DatabaseStorageService:
             return result
             
         except Exception as e:
-            print(f"Error getting report images: {e}")
+            # 获取报告图片失败
             return {"source": [], "result": []}
     
     @staticmethod
@@ -668,7 +689,7 @@ class DatabaseStorageService:
             
         except Exception as e:
             db.rollback()
-            print(f"Error saving avatar: {e}")
+            # 保存头像失败
             return None
     
     @staticmethod
@@ -777,7 +798,7 @@ class DatabaseStorageService:
             
         except Exception as e:
             db.rollback()
-            print(f"Error saving result image: {e}")
+            # 保存结果图片失败
             return None
     
     @staticmethod
@@ -795,26 +816,23 @@ class DatabaseStorageService:
         try:
             # 验证图片ID是否有效
             if not result_image_id or result_image_id.lower() in ['none', 'null', '']:
-                print(f"Invalid result image ID: {result_image_id}")
                 return None
             
             # 尝试转换为整数
             try:
                 image_id_int = int(result_image_id)
             except (ValueError, TypeError) as e:
-                print(f"Cannot convert result image ID to int: {result_image_id}, error: {e}")
                 return None
             
             result_image = db.query(ResultImage).filter(ResultImage.id == image_id_int).first()
             
             if not result_image:
-                print(f"Result image not found for ID: {image_id_int}")
                 return None
             
             return result_image.data
             
         except Exception as e:
-            print(f"Error loading result image: {e}")
+            # 加载结果图片失败
             return None
     
     @staticmethod
@@ -846,7 +864,7 @@ class DatabaseStorageService:
             return result
             
         except Exception as e:
-            print(f"Error getting report result images: {e}")
+            # 获取报告结果图片失败
             return []
     
     @staticmethod

@@ -46,7 +46,8 @@ class Avatar(Base):
     __tablename__ = 'avatars'
 
     id = Column(BIGINT(20), primary_key=True)
-    user_id = Column(String(20), ForeignKey('user.id'), nullable=False, index=True)
+    # 修改外键字段长度以匹配User表的id字段
+    user_id = Column(String(50), ForeignKey('user.id'), nullable=False, index=True)
     filename = Column(String(255), nullable=False)
     data = Column(LargeBinary(4294967295), nullable=False)
     format = Column(String(25), nullable=False, default='jpg')
@@ -111,13 +112,24 @@ class DenseImage(Base):
 class User(Base):
     __tablename__ = 'user'
 
-    id = Column(String(20), primary_key=True)
-    password = Column(CHAR(64), nullable=False)
+    # 增加用户ID长度以支持微信OpenID（28字符）
+    id = Column(String(50), primary_key=True)
+    password = Column(CHAR(64), nullable=True)  # 微信登录用户可能没有密码
     type = Column(Enum(UserType), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     last_login = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    # 微信登录相关字段
+    openid = Column(String(64), nullable=True, unique=True, index=True)  # 微信用户唯一标识
+    unionid = Column(String(64), nullable=True, index=True)  # 微信开放平台唯一标识
+    username = Column(String(50), nullable=True, index=True)  # 用户名（可选）
+    user_id = Column(BIGINT(20), nullable=False, autoincrement=True, unique=True)  # 内部用户ID
+    created_time = Column(DateTime, nullable=True)  # 创建时间（兼容字段）
+    last_login_time = Column(DateTime, nullable=True)  # 最后登录时间（兼容字段）
+    # 隐私授权相关字段
+    privacy_consent = Column(Boolean, nullable=True, default=None)  # 隐私授权状态：None=未询问，True=同意，False=拒绝
+    privacy_consent_time = Column(DateTime, nullable=True)  # 隐私授权时间
     
     # Relationships
     roles = relationship('Role', secondary='user_role', back_populates='users')
@@ -150,24 +162,27 @@ class Role(Base):
 class UserRole(Base):
     __tablename__ = 'user_role'
 
-    user_id = Column(String(20), ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
+    # 修改外键字段长度以匹配User表的id字段
+    user_id = Column(String(50), ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
     role_id = Column(BIGINT(20), ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
 
 
 class Doctor(Base):
     __tablename__ = 'doctor'
 
-    id = Column(ForeignKey('user.id'), primary_key=True)
+    id = Column(String(50), ForeignKey('user.id'), primary_key=True)
     position = Column(String(20))
     workplace = Column(String(20))
     description = Column(Text)
-    user = relationship('User', backref=backref('user'))
+    # 修复backref名称冲突，使用更具体的名称
+    user = relationship('User', backref=backref('doctor_profile', uselist=False))
 
 
 class UserDetail(Base):
     __tablename__ = 'user_detail'
 
-    id = Column(ForeignKey('user.id'), primary_key=True)
+    id = Column(String(50), ForeignKey('user.id'), primary_key=True)
+    user_id = Column(BIGINT(20), ForeignKey('user.user_id'), nullable=True, index=True)  # 支持新的user_id关联
     name = Column(String(20))
     sex = Column(Enum(UserSex))
     birth = Column(Date)
@@ -175,8 +190,11 @@ class UserDetail(Base):
     email = Column(String(100))
     address = Column(String(100))
     avatar = Column(ForeignKey('image.id'), index=True)
+    avatar_url = Column(String(500), nullable=True)  # 微信头像URL
+    created_time = Column(DateTime, nullable=True)  # 创建时间
 
-    user = relationship('User', backref=backref('user_detail', uselist=False))
+    # 明确指定使用id字段作为外键，解决多外键路径冲突问题
+    user = relationship('User', foreign_keys=[id], backref=backref('user_detail', uselist=False))
     image = relationship('Image')
 
 
@@ -184,15 +202,16 @@ class DenseReport(Base):
     __tablename__ = 'dense_report'
 
     id = Column(BIGINT(20), primary_key=True, autoincrement=True, nullable=False)
-    user = Column(ForeignKey('user.id'), index=True)
-    doctor = Column(ForeignKey('user.id'), index=True)
-    submitTime = Column(Date, server_default=text("CURRENT_DATE"))
+    user = Column(String(50), ForeignKey('user.id'), index=True)  # 保留用户外键约束
+    doctor = Column(String(50), index=True)  # 删除医生外键约束，改为普通字符串字段
+    submitTime = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))  # 修改为DateTime类型，精确到小时分钟
     current_status = Column(Enum(ReportStatus), server_default=text("'Checking'"))
     diagnose = Column(Text)
-    user1 = relationship('User', primaryjoin='DenseReport.doctor == User.id')
+    
+    # 只保留用户关系映射，删除医生关系映射
     user2 = relationship('User', primaryjoin='DenseReport.user == User.id')
     
-    # Indexes for performance
+    # Indexes for performance - 保留所有索引以提高查询性能
     __table_args__ = (
         Index('idx_report_user_status', 'user', 'current_status'),
         Index('idx_report_doctor_status', 'doctor', 'current_status'),
@@ -206,14 +225,14 @@ class Comment(Base):
 
     id = Column(BIGINT(20), primary_key=True, autoincrement=True)
     report = Column(ForeignKey('dense_report.id'), nullable=False, index=True)
-    user = Column(ForeignKey("user.id"), nullable=False)
+    user = Column(String(50), ForeignKey("user.id"), nullable=False)
     content = Column(String(4096))
     #parent_id = Column(BIGINT(20), ForeignKey('comments.id'), nullable=True, index=True)  # Field doesn't exist in current database
     is_deleted = Column(Boolean, nullable=False, default=False)
     comment_type = Column(String(50), nullable=False, default='general')  # general, diagnosis, collaboration, system
     priority = Column(String(20), nullable=False, default='normal')  # low, normal, high, urgent
     is_resolved = Column(Boolean, nullable=False, default=False)
-    resolved_by = Column(ForeignKey("user.id"), nullable=True)
+    resolved_by = Column(String(50), ForeignKey("user.id"), nullable=True)
     resolved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
@@ -237,7 +256,8 @@ class UserSession(Base):
     __tablename__ = 'user_session'
 
     id = Column(String(64), primary_key=True)
-    user_id = Column(String(20), ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    # 修改外键字段长度以匹配User表的id字段
+    user_id = Column(String(50), ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
     token = Column(String(512), nullable=False, unique=True)
     expires_at = Column(DateTime, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
@@ -285,14 +305,16 @@ class RolePermission(Base):
     role_id = Column(BIGINT(20), ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
     permission_id = Column(BIGINT(20), ForeignKey('permission.id', ondelete='CASCADE'), primary_key=True)
     granted_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-    granted_by = Column(String(20), ForeignKey('user.id'), nullable=True)
+    # 修改外键字段长度以匹配User表的id字段
+    granted_by = Column(String(50), ForeignKey('user.id'), nullable=True)
 
 
 class AuditLog(Base):
     __tablename__ = 'audit_log'
 
     id = Column(BIGINT(20), primary_key=True, autoincrement=True)
-    user_id = Column(String(20), ForeignKey('user.id', ondelete='SET NULL'), nullable=True, index=True)
+    # 修改外键字段长度以匹配User表的id字段
+    user_id = Column(String(50), ForeignKey('user.id', ondelete='SET NULL'), nullable=True, index=True)
     action = Column(String(100), nullable=False)
     resource_type = Column(String(50), nullable=False)
     resource_id = Column(String(100), nullable=True)

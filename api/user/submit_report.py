@@ -1,6 +1,7 @@
 import typing
 import uuid
 import base64
+import aiohttp
 import httpx
 import asyncio
 import json
@@ -366,7 +367,7 @@ async def submitReport(
             user=current_user_id,  # 使用认证的用户ID
             doctor=request.doctor,
             current_status=ReportStatus.Checking,  # 设置为检查中状态
-            submitTime=datetime.now().date()
+            submitTime=datetime.now()  # 修改为精确到小时分钟，解决同一天多次检测只显示一条记录的问题
         )
         
         # 保存报告到数据库

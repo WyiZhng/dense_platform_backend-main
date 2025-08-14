@@ -27,7 +27,8 @@ class PasswordResetToken(Base):
     __tablename__ = 'password_reset_token'
     
     id = Column(String(64), primary_key=True)
-    user_id = Column(String(20), ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    # 修改外键字段长度以匹配User表的id字段
+    user_id = Column(String(50), ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     token_hash = Column(String(64), nullable=False, unique=True)
     expires_at = Column(DateTime, nullable=False)
     is_used = Column(Boolean, nullable=False, default=False)

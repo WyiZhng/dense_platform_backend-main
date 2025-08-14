@@ -28,24 +28,6 @@ class ReportRequest(BaseModel):
     doctor: str
     images: typing.List[str]
 
-
-# @router.post("/api/submitReport")
-# async def submitReport(request: ReportRequest):
-#     username = resolveAccountJwt(request.token)["account"]
-#
-#     report_data = {
-#         "user": username,
-#         "doctor": request.doctor,
-#         "submitTime": str(date.today()),
-#         "current_status": ReportStatus.Checking,
-#         "images": request.images,
-#         "diagnose": None
-#     }
-#
-#     save_report(report_data)
-#     return Response()
-
-
 class GetReportRequest(BaseModel):
     token: str
 
@@ -65,8 +47,10 @@ class ReportResponse(Response):
     reports: List[Report]
 
 
-@router.post("/api/getReports")
+@router.get("/api/getReports")
 async def getReports(
+    page: int = 1,
+    page_size: int = 20,
     db: Session = Depends(get_db),
     current_user = RequireAuthWithContext
 ):
